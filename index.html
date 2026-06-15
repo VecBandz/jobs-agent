@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jobs Agent — David Haddix</title>
+<style>
+  :root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2330;--border:#30363d;--accent:#58a6ff;--accent2:#3fb950;--accent3:#f0883e;--accent4:#bc8cff;--danger:#f85149;--text:#e6edf3;--text2:#8b949e;--text3:#6e7681;--radius:10px;--font:'Inter',system-ui,sans-serif;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+
+  header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:16px;height:56px;position:sticky;top:0;z-index:100;}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;letter-spacing:-.3px;}
+  .logo-icon{width:30px;height:30px;background:linear-gradient(135deg,var(--accent),var(--accent4));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+  .header-nav{display:flex;gap:4px;margin-left:16px;flex:1;}
+  .nav-btn{padding:6px 14px;border-radius:6px;border:none;background:transparent;color:var(--text2);font-size:13px;font-family:var(--font);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px;}
+  .nav-btn:hover{background:var(--surface2);color:var(--text);}
+  .nav-btn.active{background:var(--surface2);color:var(--accent);}
+  .header-right{display:flex;align-items:center;gap:10px;margin-left:auto;font-size:12px;color:var(--text2);}
+  .gmail-badge{display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;font-size:11px;}
+  .sdot{width:7px;height:7px;border-radius:50%;background:var(--danger);box-shadow:0 0 6px var(--danger);flex-shrink:0;}
+  .sdot.on{background:var(--accent2);box-shadow:0 0 6px var(--accent2);}
+
+  .app-body{display:flex;flex:1;overflow:hidden;}
+  .sidebar{width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow-y:auto;flex-shrink:0;}
+  .sidebar-section{padding:16px 12px 8px;}
+  .sidebar-label{font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--text3);padding:0 8px;margin-bottom:6px;}
+  .si{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:6px;cursor:pointer;font-size:13px;color:var(--text2);transition:all .12s;}
+  .si:hover{background:var(--surface2);color:var(--text);}
+  .si.active{background:rgba(88,166,255,.1);color:var(--accent);}
+  .badge{margin-left:auto;background:var(--accent3);color:#000;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;min-width:18px;text-align:center;}
+  .badge.g{background:var(--accent2);}
+  .badge.b{background:var(--accent);color:#000;}
+  .divider{height:1px;background:var(--border);margin:4px 0;}
+
+  main{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:20px;}
+  .panel{display:none;flex-direction:column;gap:20px;}
+  .panel.active{display:flex;}
+
+  .page-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}
+  .page-title{font-size:20px;font-weight:700;letter-spacing:-.4px;}
+  .page-sub{font-size:13px;color:var(--text2);margin-top:3px;}
+  .page-actions{display:flex;gap:8px;flex-shrink:0;align-items:center;}
+
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:6px;font-size:13px;font-family:var(--font);font-weight:500;border:1px solid transparent;cursor:pointer;transition:all .15s;white-space:nowrap;}
+  .btn-primary{background:var(--accent);color:#000;border-color:var(--accent);}
+  .btn-primary:hover{background:#79b8ff;}
+  .btn-secondary{background:transparent;color:var(--text);border-color:var(--border);}
+  .btn-secondary:hover{background:var(--surface2);}
+  .btn-success{background:var(--accent2);color:#000;}
+  .btn-danger{background:transparent;color:var(--danger);border-color:var(--danger);}
+  .btn-danger:hover{background:rgba(248,81,73,.1);}
+  .btn-sm{padding:4px 10px;font-size:12px;}
+  .btn-ghost{background:transparent;border:none;color:var(--text2);padding:4px 8px;}
+  .btn-ghost:hover{color:var(--text);}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;}
+  .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .card-title{font-size:14px;font-weight:600;}
+
+  .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;}
+  .stat-label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;font-weight:600;}
+  .stat-value{font-size:28px;font-weight:700;letter-spacing:-1px;margin:6px 0 2px;line-height:1;}
+  .stat-change{font-size:11px;color:var(--accent2);}
+
+  /* BOARDS */
+  .boards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;}
+  .board-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:all .15s;text-align:center;}
+  .board-card:hover{border-color:var(--accent);transform:translateY(-1px);}
+  .board-card.active-board{border-color:var(--accent2);background:rgba(63,185,80,.03);}
+  .board-logo{width:44px;height:44px;border-radius:10px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;}
+  .board-name{font-size:13px;font-weight:600;margin-bottom:4px;}
+  .board-status{font-size:11px;color:var(--text2);}
+  .board-status.ok{color:var(--accent2);}
+  .board-actions{margin-top:10px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap;}
+
+  /* RESUME */
+  .resume-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;}
+  .resume-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;cursor:pointer;transition:border-color .15s;}
+  .resume-card:hover{border-color:var(--accent);}
+  .resume-card.active-resume{border-color:var(--accent2);}
+  .rc-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;}
+  .rc-name{font-size:14px;font-weight:600;}
+  .rc-ver{font-size:11px;background:var(--surface2);color:var(--text2);padding:2px 7px;border-radius:10px;}
+  .rc-meta{font-size:12px;color:var(--text2);margin-bottom:12px;}
+  .rc-tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;}
+  .tag{font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(88,166,255,.1);color:var(--accent);border:1px solid rgba(88,166,255,.2);}
+  .tag.g{background:rgba(63,185,80,.1);color:var(--accent2);border-color:rgba(63,185,80,.2);}
+  .tag.o{background:rgba(240,136,62,.1);color:var(--accent3);border-color:rgba(240,136,62,.2);}
+  .tag.p{background:rgba(188,140,255,.1);color:var(--accent4);border-color:rgba(188,140,255,.2);}
+  .rc-actions{display:flex;gap:6px;}
+
+  /* EDITOR */
+  .editor-wrap{display:grid;grid-template-columns:1fr 340px;gap:16px;min-height:560px;}
+  .editor-area{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;overflow:hidden;}
+  .editor-toolbar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface2);flex-wrap:wrap;}
+  .editor-content{flex:1;padding:20px;overflow-y:auto;font-size:13px;line-height:1.8;color:var(--text);outline:none;}
+  .editor-content h1{font-size:20px;font-weight:700;margin-bottom:2px;letter-spacing:-.3px;}
+  .editor-content .contact{font-size:12px;color:var(--text2);margin-bottom:14px;}
+  .editor-content h2{font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.8px;margin:16px 0 6px;border-bottom:1px solid rgba(88,166,255,.2);padding-bottom:3px;}
+  .editor-content h3{font-size:13px;font-weight:600;margin-bottom:1px;color:var(--text);}
+  .editor-content .job-meta{font-size:11px;color:var(--text3);margin-bottom:4px;}
+  .editor-content p,.editor-content li{font-size:12.5px;color:var(--text2);line-height:1.7;}
+  .editor-content ul{padding-left:16px;margin-bottom:10px;}
+  .editor-content .competencies{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px;}
+  @keyframes pulse-border{0%{border-color:var(--border);}50%{border-color:var(--accent);box-shadow:0 0 12px rgba(88,166,255,.2);}100%{border-color:var(--border);}}
+  .ai-thinking{animation:pulse-border 1.5s infinite;}
+
+  /* AI PANEL */
+  .ai-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;overflow:hidden;}
+  .ai-panel-header{padding:14px 16px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,rgba(88,166,255,.05),rgba(188,140,255,.05));}
+  .ai-label{font-size:12px;font-weight:600;color:var(--accent);display:flex;align-items:center;gap:6px;}
+  .ai-messages{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;min-height:200px;}
+  .ai-msg{padding:10px 12px;border-radius:8px;font-size:12.5px;line-height:1.6;}
+  .ai-msg.bot{background:rgba(88,166,255,.08);border:1px solid rgba(88,166,255,.15);color:var(--text);}
+  .ai-msg.user{background:var(--surface2);border:1px solid var(--border);color:var(--text2);align-self:flex-end;}
+  .ai-loading{display:flex;gap:4px;align-items:center;padding:10px 12px;}
+  .ai-loading span{width:6px;height:6px;background:var(--accent);border-radius:50%;animation:bounce 1.2s infinite;}
+  .ai-loading span:nth-child(2){animation-delay:.2s;}
+  .ai-loading span:nth-child(3){animation-delay:.4s;}
+  @keyframes bounce{0%,80%,100%{transform:translateY(0);opacity:.4;}40%{transform:translateY(-6px);opacity:1;}}
+  .ai-input-wrap{padding:12px;border-top:1px solid var(--border);display:flex;gap:8px;}
+  .ai-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-size:12.5px;font-family:var(--font);resize:none;outline:none;min-height:60px;}
+  .ai-input:focus{border-color:var(--accent);}
+  .ai-quick-prompts{padding:0 12px 10px;display:flex;flex-wrap:wrap;gap:5px;}
+  .qp{font-size:11px;padding:3px 8px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:all .12s;font-family:var(--font);}
+  .qp:hover{border-color:var(--accent);color:var(--accent);background:rgba(88,166,255,.05);}
+
+  /* EMAIL */
+  .email-layout{display:grid;grid-template-columns:290px 1fr;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;min-height:520px;}
+  .email-list{border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column;}
+  .email-list-header{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface2);position:sticky;top:0;z-index:1;}
+  .email-list-title{font-size:13px;font-weight:600;}
+  .email-item{padding:12px 14px;border-bottom:1px solid rgba(48,54,61,.5);cursor:pointer;transition:background .1s;border-left:2px solid transparent;}
+  .email-item:hover{background:rgba(255,255,255,.02);}
+  .email-item.selected{background:rgba(88,166,255,.06);border-left-color:var(--accent);}
+  .email-item.unread .esender{font-weight:700;color:var(--text);}
+  .email-item.unread .esubject{color:var(--text);font-weight:500;}
+  .esender{font-size:12.5px;color:var(--text2);}
+  .erow{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;}
+  .esubject{font-size:12px;color:var(--text2);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .epreview{font-size:11px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .etime{font-size:10px;color:var(--text3);flex-shrink:0;}
+  .email-view{display:flex;flex-direction:column;}
+  .ev-header{padding:16px 20px;border-bottom:1px solid var(--border);background:var(--surface2);}
+  .ev-subject{font-size:16px;font-weight:600;margin-bottom:8px;}
+  .ev-meta{font-size:12px;color:var(--text2);line-height:1.6;}
+  .ev-body{flex:1;padding:20px;overflow-y:auto;font-size:13px;line-height:1.8;color:var(--text2);}
+  .ev-actions{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;background:var(--surface2);flex-wrap:wrap;}
+
+  .gmail-signin{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:420px;gap:16px;text-align:center;}
+
+  /* TABS */
+  .tab-bar{display:flex;border-bottom:1px solid var(--border);margin-bottom:16px;}
+  .tab{padding:9px 16px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .12s;}
+  .tab:hover{color:var(--text);}
+  .tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+  /* TABLE */
+  .table-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{text-align:left;padding:10px 14px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);border-bottom:1px solid var(--border);}
+  td{padding:11px 14px;border-bottom:1px solid rgba(48,54,61,.5);color:var(--text);}
+  tr:hover td{background:rgba(255,255,255,.02);}
+  .sp{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:10px;font-size:11px;font-weight:600;}
+  .s-applied{background:rgba(88,166,255,.1);color:var(--accent);}
+  .s-interview{background:rgba(63,185,80,.1);color:var(--accent2);}
+  .s-offer{background:rgba(188,140,255,.1);color:var(--accent4);}
+  .s-rejected{background:rgba(248,81,73,.1);color:var(--danger);}
+  .s-saved{background:rgba(240,136,62,.1);color:var(--accent3);}
+
+  /* OVERLAYS */
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:200;}
+  .overlay.open{display:flex;}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;width:580px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+  .modal-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:600;background:var(--surface2);}
+  .modal-body{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:12px;}
+  .modal-footer{padding:12px 18px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface2);}
+  .field{display:flex;flex-direction:column;gap:4px;}
+  .field label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;}
+  .field input,.field textarea,.field select{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-size:13px;font-family:var(--font);outline:none;}
+  .field input:focus,.field textarea:focus{border-color:var(--accent);}
+  .field textarea{resize:vertical;min-height:100px;}
+
+  .upload-area{border:2px dashed var(--border);border-radius:var(--radius);padding:30px;text-align:center;cursor:pointer;transition:all .15s;}
+  .upload-area:hover{border-color:var(--accent);background:rgba(88,166,255,.03);}
+
+  .toast-container{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column;gap:8px;z-index:300;}
+  .toast{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 16px;font-size:13px;display:flex;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.4);animation:slideIn .2s ease;min-width:260px;}
+  .toast.success{border-left:3px solid var(--accent2);}
+  .toast.info{border-left:3px solid var(--accent);}
+  .toast.error{border-left:3px solid var(--danger);}
+  @keyframes slideIn{from{transform:translateX(100%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+  .spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .loading-row{display:flex;align-items:center;justify-content:center;gap:10px;padding:30px;color:var(--text2);font-size:13px;}
+  ::-webkit-scrollbar{width:4px;height:4px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo"><div class="logo-icon">💼</div>Jobs Agent</div>
+  <nav class="header-nav">
+    <button class="nav-btn active" onclick="switchPanel('dashboard')">📊 Dashboard</button>
+    <button class="nav-btn" onclick="switchPanel('resumes')">📄 Resume</button>
+    <button class="nav-btn" onclick="switchPanel('boards')">🌐 Job Boards</button>
+    <button class="nav-btn" onclick="switchPanel('applications')">📋 Applications</button>
+    <button class="nav-btn" onclick="switchPanel('email')">✉️ Gmail</button>
+  </nav>
+  <div class="header-right">
+    <div class="sdot" id="gmail-dot"></div>
+    <span id="gmail-status-text">Gmail not connected</span>
+    <div class="gmail-badge">✉ dhaddix80@gmail.com</div>
+  </div>
+</header>
+
+<div class="app-body">
+<aside class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-label">Quick Actions</div>
+    <div class="si" onclick="openCompose()">✏️ New Email</div>
+    <div class="si" onclick="openPostModal()">🚀 Post Resume</div>
+    <div class="si" onclick="switchPanel('email');setFolder('jobs',null)">🎯 View Job Emails</div>
+  </div>
+  <div class="divider"></div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Resume</div>
+    <div class="si" onclick="switchPanel('resumes')">📄 Data Entry Resume <span class="badge g">Active</span></div>
+    <div class="si" onclick="switchPanel('resumes');openEditor()">✏️ Edit Resume</div>
+  </div>
+  <div class="divider"></div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Gmail</div>
+    <div class="si" onclick="switchPanel('email');setFolder('inbox',null)">📥 Inbox <span class="badge" id="sb-unread">—</span></div>
+    <div class="si" onclick="switchPanel('email');setFolder('jobs',null)">🎯 Job Emails</div>
+    <div class="si" onclick="switchPanel('email');setFolder('sent',null)">📤 Sent</div>
+    <div class="si" onclick="switchPanel('email');setFolder('drafts',null)">📑 Drafts</div>
+  </div>
+  <div class="divider"></div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Applications</div>
+    <div class="si" onclick="switchPanel('applications')">📋 Tracker <span class="badge b" id="sb-apps">0</span></div>
+  </div>
+</aside>
+
+<main>
+
+<!-- DASHBOARD -->
+<div id="panel-dashboard" class="panel active">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Welcome back, David 👋</div>
+      <div class="page-sub">Part-time remote data entry job search — LinkedIn, Indeed & FlexJobs active.</div>
+    </div>
+    <div class="page-actions">
+      <button class="btn btn-secondary" onclick="openPostModal()">🚀 Post Resume</button>
+      <button class="btn btn-primary" onclick="switchPanel('resumes');openEditor()">✏️ Edit Resume</button>
+    </div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label">Unread Emails</div><div class="stat-value" style="color:var(--accent)" id="dash-unread">—</div><div class="stat-change" id="dash-unread-sub">Connect Gmail to sync</div></div>
+    <div class="stat-card"><div class="stat-label">Applications</div><div class="stat-value" style="color:var(--accent2)" id="dash-apps">0</div><div class="stat-change">Tracked below</div></div>
+    <div class="stat-card"><div class="stat-label">Active Boards</div><div class="stat-value" style="color:var(--accent3)">3</div><div class="stat-change">LinkedIn · Indeed · FlexJobs</div></div>
+    <div class="stat-card"><div class="stat-label">Target Role</div><div class="stat-value" style="color:var(--accent4);font-size:14px;margin-top:8px;">Data Entry</div><div class="stat-change">Part-time · Remote</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <div class="card">
+      <div class="card-header"><div class="card-title">🎯 Active Job Boards</div></div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div style="display:flex;align-items:center;gap:12px;padding:10px;background:rgba(63,185,80,.05);border:1px solid rgba(63,185,80,.15);border-radius:8px;">
+          <div style="width:32px;height:32px;background:#0A66C2;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:12px;flex-shrink:0;">in</div>
+          <div><div style="font-weight:600;font-size:13px;">LinkedIn</div><div style="font-size:11px;color:var(--text2);">Job alerts + recruiter messages active</div></div>
+          <button class="btn btn-sm btn-secondary" style="margin-left:auto;" onclick="window.open('https://www.linkedin.com/jobs/','_blank')">Open</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:10px;background:rgba(63,185,80,.05);border:1px solid rgba(63,185,80,.15);border-radius:8px;">
+          <div style="width:32px;height:32px;background:#003A9B;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:11px;flex-shrink:0;">In</div>
+          <div><div style="font-weight:600;font-size:13px;">Indeed</div><div style="font-size:11px;color:var(--text2);">Multiple alerts · data entry, admin, bookkeeper</div></div>
+          <button class="btn btn-sm btn-secondary" style="margin-left:auto;" onclick="window.open('https://www.indeed.com/','_blank')">Open</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:10px;background:rgba(63,185,80,.05);border:1px solid rgba(63,185,80,.15);border-radius:8px;">
+          <div style="width:32px;height:32px;background:#1E88E5;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:10px;flex-shrink:0;">FJ</div>
+          <div><div style="font-weight:600;font-size:13px;">FlexJobs</div><div style="font-size:11px;color:var(--text2);">Daily remote-only job digest</div></div>
+          <button class="btn btn-sm btn-secondary" style="margin-left:auto;" onclick="window.open('https://www.flexjobs.com/','_blank')">Open</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">🤖 AI Suggestions</div></div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="background:rgba(88,166,255,.06);border:1px solid rgba(88,166,255,.15);border-radius:8px;padding:12px;font-size:12.5px;line-height:1.6;">
+          💡 Connect Gmail to see your live job emails from Indeed, LinkedIn & FlexJobs, and get AI-drafted replies to recruiters.
+          <div style="margin-top:8px;"><button class="btn btn-sm btn-primary" onclick="switchPanel('email')">Connect Gmail →</button></div>
+        </div>
+        <div style="background:rgba(63,185,80,.06);border:1px solid rgba(63,185,80,.15);border-radius:8px;padding:12px;font-size:12.5px;line-height:1.6;">
+          📄 Your resume is loaded. Use the AI assistant to tailor it for specific job postings or add keywords.
+          <div style="margin-top:8px;"><button class="btn btn-sm btn-success" onclick="switchPanel('resumes');openEditor()">Open Resume →</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RESUME -->
+<div id="panel-resumes" class="panel">
+  <div class="page-header">
+    <div><div class="page-title">Resume</div><div class="page-sub">David Haddix · Part-time Remote Data Entry Analyst / Specialist</div></div>
+    <div class="page-actions">
+      <button class="btn btn-secondary" onclick="showUpload()">⬆️ Upload New</button>
+      <button class="btn btn-secondary" onclick="toast('Preparing PDF download…','info')">⬇️ PDF</button>
+      <button class="btn btn-secondary" onclick="toast('Preparing DOCX download…','info')">⬇️ DOCX</button>
+      <button class="btn btn-primary" onclick="openEditor()">✏️ Edit</button>
+    </div>
+  </div>
+
+  <div id="resume-list-view">
+    <div class="resume-grid">
+      <div class="resume-card active-resume" onclick="openEditor()">
+        <div class="rc-header"><div class="rc-name">Data Entry Analyst / Specialist</div><span class="rc-ver">Current · Active</span></div>
+        <div class="rc-meta">David Haddix · Middletown, OH 45042 · dhaddix80@gmail.com</div>
+        <div class="rc-tags">
+          <span class="tag g">Active</span>
+          <span class="tag">Data Entry</span>
+          <span class="tag">Records Mgmt</span>
+          <span class="tag">QuickBooks</span>
+          <span class="tag">Remote</span>
+          <span class="tag">Part-time</span>
+        </div>
+        <div class="rc-actions">
+          <button class="btn btn-sm btn-primary" onclick="event.stopPropagation();openEditor()">✏️ Edit with AI</button>
+          <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();openPostModal()">🚀 Post</button>
+          <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();toast('Downloading resume…','info')">⬇️ Download</button>
+        </div>
+      </div>
+    </div>
+    <div id="upload-wrap" style="display:none;margin-top:12px;">
+      <div class="upload-area" onclick="toast('Drag & drop your updated resume PDF or DOCX here','info')">
+        <div style="font-size:28px;margin-bottom:8px;">📂</div>
+        <div style="font-size:13px;color:var(--text2);">Drop updated resume here or click to upload</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">PDF, DOCX · Max 10MB</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDITOR VIEW -->
+  <div id="resume-editor-view" style="display:none;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+      <button class="btn btn-secondary btn-sm" onclick="closeEditor()">← Back</button>
+      <span style="font-size:14px;font-weight:600;color:var(--text2);">Editing: Data Entry Analyst / Specialist Resume</span>
+      <div style="margin-left:auto;display:flex;gap:8px;">
+        <button class="btn btn-secondary btn-sm" onclick="toast('Preparing PDF…','info')">⬇️ PDF</button>
+        <button class="btn btn-secondary btn-sm" onclick="toast('Preparing DOCX…','info')">⬇️ DOCX</button>
+        <button class="btn btn-success btn-sm" onclick="toast('Resume saved!','success')">💾 Save</button>
+      </div>
+    </div>
+    <div class="editor-wrap">
+      <div class="editor-area" id="main-editor">
+        <div class="editor-toolbar">
+          <button class="btn btn-ghost btn-sm" onclick="document.execCommand('bold')"><b>B</b></button>
+          <button class="btn btn-ghost btn-sm" onclick="document.execCommand('italic')"><i>I</i></button>
+          <button class="btn btn-ghost btn-sm" onclick="document.execCommand('underline')"><u>U</u></button>
+          <div style="width:1px;height:16px;background:var(--border);margin:0 4px;"></div>
+          <button class="btn btn-ghost btn-sm" onclick="document.execCommand('insertUnorderedList')">• List</button>
+          <div style="margin-left:auto;">
+            <button class="btn btn-sm" style="background:rgba(88,166,255,.1);color:var(--accent);border:1px solid rgba(88,166,255,.2);" onclick="aiRefineAll()">✨ AI Refine All</button>
+          </div>
+        </div>
+        <div class="editor-content" id="resume-editor" contenteditable="true">
+          <h1>DAVID HADDIX</h1>
+          <div class="contact">Middletown, Ohio 45042 &nbsp;·&nbsp; (513) 973-7293 &nbsp;·&nbsp; dhaddix80@gmail.com</div>
+
+          <h2>Professional Summary</h2>
+          <p>Detail-oriented professional with 15+ years of experience in data entry, records management, quality control, order processing, and office administration. Proven ability to maintain high accuracy under volume, manage multiple data streams simultaneously, and work independently with minimal or no supervision. Proficient in Microsoft Word, Excel, QuickBooks, and business invoicing systems. Additionally skilled in leveraging AI tools to accelerate data processing, automate document workflows, and maintain organized digital records with minimal supervision. Seeking a remote part-time Data Entry Analyst or Specialist position.</p>
+
+          <h2>Core Competencies</h2>
+          <div class="competencies">
+            <span class="tag">AI Agents &amp; Digital Products</span>
+            <span class="tag">Quality Control &amp; Verification</span>
+            <span class="tag">Invoicing &amp; Payroll Records</span>
+            <span class="tag">Inventory Management</span>
+            <span class="tag">QuickBooks / Point of Sale</span>
+            <span class="tag">Document Drafting &amp; Editing</span>
+            <span class="tag">Data Entry &amp; Record Keeping</span>
+          </div>
+
+          <h2>Professional Experience</h2>
+
+          <h3>General Manager &nbsp;·&nbsp; <em>Taylor Pavement Maintenance</em> &nbsp;·&nbsp; Ohio</h3>
+          <div class="job-meta">Aug 2021 – Mar 2022</div>
+          <ul>
+            <li>Managed all office data entry and records across Windows 10 PCs, including invoicing for customers and vendors.</li>
+            <li>Processed employee payroll and maintained associated personnel records.</li>
+            <li>Coordinated truck dispatch and tracked job scheduling and completion data.</li>
+          </ul>
+
+          <h3>Security Operations Center Operator &nbsp;·&nbsp; <em>Allied Universal Security</em> &nbsp;·&nbsp; Cincinnati, OH</h3>
+          <div class="job-meta">2019 – 2021</div>
+          <ul>
+            <li>Maintained accurate digital logs of security officer patrols, incidents, and shift activity using Windows 10 PCs and company handhelds.</li>
+            <li>Operated software interfaces for camera monitoring and alarm systems, entering and tracking data in real time.</li>
+            <li>Conducted new employee training and documented safety patrol audits.</li>
+          </ul>
+
+          <h3>Senior Linux Engineer / Network Admin &nbsp;·&nbsp; <em>Luxottica Retail</em> &nbsp;·&nbsp; Mason, OH</h3>
+          <div class="job-meta">2015 – 2018</div>
+          <ul>
+            <li>Maintained detailed inventory records and asset tracking for 2,000+ devices including switches, routers, thin clients, servers, and tablets.</li>
+            <li>Served as Network Administrator for the Digital Windows project, coordinating device deployment and documentation for front-facing retail display systems.</li>
+            <li>Managed proprietary software support records and device configuration logs across multiple retail locations.</li>
+          </ul>
+
+          <h3>Account Executive &nbsp;·&nbsp; <em>Decca Plus / Natural Beauty Products</em> &nbsp;·&nbsp; Middletown, OH</h3>
+          <div class="job-meta">Mar 2015 – Oct 2015</div>
+          <ul>
+            <li>Maintained and researched a customer database to identify and develop sales leads.</li>
+            <li>Tracked outreach activity including calls, mailings, and social media campaigns.</li>
+          </ul>
+
+          <h3>Project Manager &nbsp;·&nbsp; <em>TC Tech LLC</em> &nbsp;·&nbsp; Covington, KY</h3>
+          <div class="job-meta">Jun 2012 – Oct 2013</div>
+          <ul>
+            <li>Managed QuickBooks Point of Sale system and maintained all financial and inventory records.</li>
+            <li>Coordinated vendor product placement, store inventory data, and daily cash reconciliation.</li>
+          </ul>
+
+          <h3>Field Tech Supervisor &nbsp;·&nbsp; <em>Scope Services (Duke Energy Contractor)</em> &nbsp;·&nbsp; Cincinnati, OH</h3>
+          <div class="job-meta">May 2010 – Sep 2011</div>
+          <ul>
+            <li>Performed data entry in Microsoft Word and Excel, maintaining accurate documentation for field operations.</li>
+            <li>Tracked and managed tool and equipment inventories for a team of field technicians.</li>
+            <li>Promoted from field technician to Field Tech Supervisor based on performance.</li>
+          </ul>
+
+          <h3>Installation Technician &nbsp;·&nbsp; <em>Precision Broadband (Time Warner Inc.)</em> &nbsp;·&nbsp; Cincinnati, OH</h3>
+          <div class="job-meta">Jan 2009 – Apr 2010</div>
+          <ul>
+            <li>Maintained accurate records of equipment inventory, assignments, and payment collections.</li>
+            <li>Recognized as a top performer for exceptional customer satisfaction (Jun–Aug 2009).</li>
+          </ul>
+
+          <h3>Quality Control Specialist &nbsp;·&nbsp; <em>Parts Express International, Inc.</em> &nbsp;·&nbsp; Springboro, OH</h3>
+          <div class="job-meta">Aug 2007 – Jan 2009</div>
+          <ul>
+            <li>Performed data entry of all shipping protocol information for domestic and international audio/visual equipment shipments.</li>
+            <li>Trained new personnel on shipment processes and data entry procedures.</li>
+            <li>Received monthly bonuses for superior order volume and consistently low error rates.</li>
+          </ul>
+
+          <h3>Order Processor &nbsp;·&nbsp; <em>Dell Small Package Hub</em> &nbsp;·&nbsp; West Chester, OH</h3>
+          <div class="job-meta">Jan 2007 – Aug 2007</div>
+          <ul>
+            <li>Processed electronic equipment orders, verifying accuracy against customer records prior to shipment.</li>
+            <li>Selected for specialty high-priority order team.</li>
+          </ul>
+
+          <h2>Technical Skills</h2>
+          <p><strong>Office &amp; Productivity:</strong> Microsoft Word, Microsoft Excel, QuickBooks Point of Sale</p>
+          <p><strong>Operating Systems:</strong> Windows 7/8/10, Linux, Android, macOS</p>
+          <p><strong>Remote &amp; Support Tools:</strong> TeamViewer, LogMeIn</p>
+          <p><strong>AI Tools:</strong> Claude Code / Cowork, Grok, Microsoft Copilot</p>
+          <p><strong>Software Creation:</strong> AI-assisted development of scripts, automation tools, and productivity applications</p>
+          <p><strong>Document Creation:</strong> AI-assisted drafting, formatting, and editing of Word, Excel, PDF, and additional file formats</p>
+
+          <h2>Additional Skills &amp; Capabilities</h2>
+          <ul>
+            <li>Leverage AI tools (Claude, Microsoft Copilot, Grok) to automate repetitive data tasks, generate and format professional documents, and build custom workflow tools — reducing manual effort and increasing throughput on data-heavy projects.</li>
+            <li>Built custom browser-based data tracking dashboards in HTML to monitor records, organize pipelines, and display live status views — demonstrating hands-on ability to design practical data management tools without off-the-shelf software.</li>
+            <li>Applied AI-assisted automation to real administrative workflows including document generation, record organization, multi-file management, and scheduled task execution — directly applicable to high-volume data entry environments.</li>
+          </ul>
+
+          <h2>Education &amp; Certifications</h2>
+          <p><strong>High School Diploma</strong> — Middletown High School, Middletown, OH — June 1998</p>
+          <p><strong>CompTIA A+ Certification</strong> — Hardware and software support</p>
+        </div>
+      </div>
+
+      <!-- AI PANEL -->
+      <div class="ai-panel">
+        <div class="ai-panel-header">
+          <div class="ai-label">✨ AI Resume Assistant <div class="sdot on" style="margin-left:6px;"></div></div>
+        </div>
+        <div class="ai-messages" id="ai-messages">
+          <div class="ai-msg bot">Hi David! Your resume is loaded — Data Entry Analyst / Specialist targeting part-time remote work. I know your full background: 15+ years data entry, records management, QuickBooks, payroll, quality control, order processing, and your AI/automation skills. What would you like to improve?</div>
+        </div>
+        <div class="ai-quick-prompts">
+          <button class="qp" onclick="sendQuickPrompt('Tailor my resume for this specific job posting — I\'ll paste it below')">🎯 Tailor for a job posting</button>
+          <button class="qp" onclick="sendQuickPrompt('Add more keywords to help pass ATS systems for data entry roles')">🤖 Add ATS keywords</button>
+          <button class="qp" onclick="sendQuickPrompt('Make my summary more compelling for part-time remote data entry roles')">💡 Strengthen summary</button>
+          <button class="qp" onclick="sendQuickPrompt('Add quantified achievements — error rates, volume handled, accuracy percentages')">📊 Add metrics</button>
+          <button class="qp" onclick="sendQuickPrompt('How can I better highlight my AI and automation skills for data entry employers?')">🤖 Highlight AI skills</button>
+          <button class="qp" onclick="sendQuickPrompt('Write a cover letter for a part-time remote data entry position')">📝 Write cover letter</button>
+        </div>
+        <div class="ai-input-wrap">
+          <textarea class="ai-input" id="ai-input" placeholder="Ask AI to improve your resume, tailor for a job, write a cover letter…" onkeydown="handleAIKey(event)"></textarea>
+          <button class="btn btn-primary" onclick="sendAIMessage()" style="align-self:flex-end;">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JOB BOARDS -->
+<div id="panel-boards" class="panel">
+  <div class="page-header">
+    <div><div class="page-title">Job Boards</div><div class="page-sub">Active boards detected from dhaddix80@gmail.com + additional boards to connect.</div></div>
+    <div class="page-actions"><button class="btn btn-primary" onclick="openPostModal()">🚀 Post Resume</button></div>
+  </div>
+  <div class="tab-bar">
+    <div class="tab active" onclick="setBoardTab(this,'active')">Active from Email (9)</div>
+    <div class="tab" onclick="setBoardTab(this,'more')">Add More</div>
+    <div class="tab" onclick="setBoardTab(this,'settings')">Post Settings</div>
+  </div>
+  <div id="bt-active">
+    <div style="background:rgba(63,185,80,.06);border:1px solid rgba(63,185,80,.2);border-radius:8px;padding:12px 16px;font-size:12.5px;color:var(--text2);margin-bottom:14px;line-height:1.6;">
+      ✅ <strong style="color:var(--text);">9 boards detected from dhaddix80@gmail.com</strong> — all actively sending you job matches right now.
+    </div>
+    <div class="boards-grid">
+      <div class="board-card active-board">
+        <div class="board-logo" style="background:#0A66C2;">in</div>
+        <div class="board-name">LinkedIn</div>
+        <div class="board-status ok">✓ Job alerts + recruiter messages</div>
+        <div class="board-actions">
+          <button class="btn btn-sm btn-secondary" onclick="window.open('https://www.linkedin.com/jobs/','_blank')">Jobs</button>
+          <button class="btn btn-sm btn-secondary" onclick="window.open('https://www.linkedin.com/in/','_blank')">Profile</button>
+        </div>
+      </div>
+      <div class="board-card active-board">
+        <div class="board-logo" style="background:#003A9B;font-size:11px;">Indeed</div>
+        <div class="board-name">Indeed</div>
+        <div class="board-status ok">✓ Data entry, admin, bookkeeper alerts</div>
+        <div class="board-actions">
+          <button class="btn btn-sm btn-secondary" onclick="window.open('https://www.indeed.com/','_blank')">Jobs</button>
+          <button class="btn btn-sm btn-secondary" onclick="window.open('https://profile.indeed.com/','_blank')">Profile</button>
+        </div>
+      </div>
+      <div class="board-card active-board">
+        <div class="board-logo" style="background:#1E88E5;font-size:11px;">FJ</div>
+        <div class="board-name">FlexJobs</div>
+        <div class="board-status ok">✓ Daily remote-only job digest</div>
+        <div class="board-actions">
+          <button class="btn btn-sm btn-secondary" onclick="window.open('https://www.flexjobs.com/','_blank')">Jobs</button>
+          <button class="btn btn-sm btn-secondary" onclick="window.open('https://www.flexjobs.com/account','_blank')">Account</button>
+        </div>
+      </div>
+      <div class="board-card active-board">
+        <div class="board-logo" style="background:#1A73E8;font-size:11px;">JC</div>
+        <div class="board-name">Jobcase</div>
+        <div class="board-status ok">✓ Daily local + remote job digests</div>
+        <div class="board-actions">
+          <button class="btn btn-sm btn-secondary" onclick="window.open('https://www.jobcase.com/','_blank')">Jobs</button>
+          <button class="btn btn-sm btn-secondary" onclick="window.open('https://www.jobcase.com/profile','_blank')">Profile</button>
+        </div>
+      </div>
+      <div class="board-card active-board">
+        <div class="board-logo" style="background:#7B2FBE;font-size:11px;">LE</div>
+        <div class="board-name">Lensa</div>
+        <div class="board-status ok">✓ Data Entry Coordinator alerts daily</div>
+        <div class="board-actions">
+          <button class="btn btn-sm btn-secondary" onclick="window.open('https://lensa.com/','_blank')">Jobs</button>
+          <button class="btn btn-sm btn-secondary" onclick="window.open('https://lensa.com/profile','_blank')">Profile</button>
+        </div>
+      </div>
+      <div class="board-card active-board">
+        <div class="board-logo" style="background:#2E7D32;font-size:10px;">VV</div>
+        <div class="board-name">Virtual Vocations</div>
+        <div class="board-status ok">✓ Daily remote data entry digest</div>
+        <div class="board-actions">
+          <button class="btn btn-sm btn-secondary" onclick="window.open('https://www.virtualvocations.com/','_blank')">Jobs</button>
+          <button class="btn btn-sm btn-secondary" onclick="window.open('https://www.virtualvocations.com/job_seeker/dashboard','_blank')">Account</button>
+        </div>
+      </div>
+      <div class="board-card active-board">
+        <div class="board-logo" style="background:#E65100;font-size:10px;">EJF</div>
+        <div class="board-name">EveryJobForMe</div>
+        <div class="board-status ok">✓ Manpower &amp; local job matches</div>
+        <div class="board-actions">
+          <button class="btn btn-sm btn-secondary" onclick="window.open('https://www.everyjobforme.com/','_blank')">Jobs</button>
+        </div>
+      </div>
+      <div class="board-card active-board">
+        <div class="board-logo" style="background:#00838F;font-size:10px;">RC</div>
+        <div class="board-name">Remote.co</div>
+        <div class="board-status ok">✓ Remote job alerts active</div>
+        <div class="board-actions">
+          <button class="btn btn-sm btn-secondary" onclick="window.open('https://remote.co/remote-jobs/','_blank')">Jobs</button>
+        </div>
+      </div>
+      <div class="board-card active-board">
+        <div class="board-logo" style="background:#37474F;font-size:10px;">GMJ</div>
+        <div class="board-name">Get-Me-Jobs</div>
+        <div class="board-status ok">✓ Local &amp; Manpower job matches</div>
+        <div class="board-actions">
+          <button class="btn btn-sm btn-secondary" onclick="window.open('https://www.get-me-jobs.com/','_blank')">Jobs</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="bt-more" style="display:none;">
+    <div style="background:rgba(88,166,255,.06);border:1px solid rgba(88,166,255,.15);border-radius:8px;padding:12px 16px;font-size:12.5px;color:var(--text2);margin-bottom:14px;">
+      ℹ️ Click <strong style="color:var(--text);">Connect</strong> to open the board and upload your resume there. App tracks it as connected.
+    </div>
+    <div class="boards-grid" id="more-boards-grid"></div>
+  </div>
+  <div id="bt-settings" style="display:none;">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Default Post Settings</div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="field"><label>Resume</label>
+          <select style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-family:var(--font);">
+            <option>Data Entry Analyst / Specialist (Current)</option>
+          </select>
+        </div>
+        <div class="field"><label>Job Type</label>
+          <select style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-family:var(--font);">
+            <option>Part-time</option><option>Full-time</option><option>Contract</option><option>Any</option>
+          </select>
+        </div>
+        <div class="field"><label>Location</label><input type="text" value="Remote" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-family:var(--font);"></div>
+        <div class="field"><label>Target Title</label><input type="text" value="Data Entry Analyst / Specialist" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-family:var(--font);"></div>
+      </div>
+      <div style="margin-top:14px;"><button class="btn btn-primary" onclick="toast('Settings saved!','success')">Save Settings</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- APPLICATIONS -->
+<div id="panel-applications" class="panel">
+  <div class="page-header">
+    <div><div class="page-title">Application Tracker</div><div class="page-sub">Track every job you've applied to.</div></div>
+    <div class="page-actions"><button class="btn btn-primary" onclick="document.getElementById('app-overlay').classList.add('open')">➕ Add Application</button></div>
+  </div>
+  <div class="card"><div id="apps-wrap"></div></div>
+</div>
+
+<!-- EMAIL -->
+<div id="panel-email" class="panel">
+  <div class="page-header">
+    <div><div class="page-title">Gmail</div><div class="page-sub" id="email-sub">Sign in to access dhaddix80@gmail.com</div></div>
+    <div class="page-actions" id="email-actions"></div>
+  </div>
+  <div id="gmail-signin-view">
+    <div class="card">
+      <div class="gmail-signin">
+        <div style="font-size:48px;">📬</div>
+        <div style="font-size:18px;font-weight:600;">Connect dhaddix80@gmail.com</div>
+        <div style="font-size:13px;color:var(--text2);max-width:340px;line-height:1.6;text-align:center;">Sign in with Google to read, send, and manage your real inbox — including all your job board emails from Indeed, LinkedIn, and FlexJobs.</div>
+        <div id="gsignin-btn"></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">Token stored in memory only. Credentials go directly to Google.</div>
+      </div>
+    </div>
+  </div>
+  <div id="gmail-inbox-view" style="display:none;">
+    <div class="tab-bar">
+      <div class="tab active" onclick="setFolder('inbox',this)">📥 Inbox</div>
+      <div class="tab" onclick="setFolder('jobs',this)">🎯 Job Emails</div>
+      <div class="tab" onclick="setFolder('sent',this)">📤 Sent</div>
+      <div class="tab" onclick="setFolder('drafts',this)">📑 Drafts</div>
+    </div>
+    <div class="email-layout">
+      <div class="email-list">
+        <div class="email-list-header">
+          <div class="email-list-title" id="folder-label">Inbox</div>
+          <button class="btn btn-ghost btn-sm" onclick="loadEmails(currentFolder)">↻</button>
+        </div>
+        <div id="email-list-body"><div class="loading-row"><div class="spinner"></div> Loading…</div></div>
+      </div>
+      <div class="email-view" id="email-view-panel">
+        <div style="display:flex;align-items:center;justify-content:center;flex:1;color:var(--text3);font-size:13px;flex-direction:column;gap:8px;padding:40px;">
+          <span style="font-size:32px;">✉️</span>Select an email to read it
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<!-- COMPOSE -->
+<div class="overlay" id="compose-overlay">
+  <div class="modal">
+    <div class="modal-header"><span id="compose-title">New Email</span><button class="btn btn-ghost" onclick="closeCompose()">✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>From</label><input type="email" value="dhaddix80@gmail.com" readonly style="opacity:.6;"></div>
+      <div class="field"><label>To</label><input type="email" id="cto" placeholder="recipient@example.com"></div>
+      <div class="field"><label>Subject</label><input type="text" id="csubject" placeholder="Subject"></div>
+      <div class="field"><label>Message</label><textarea id="cbody" placeholder="Write your message…"></textarea></div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="btn btn-sm btn-secondary" onclick="aiDraftEmail()">✨ AI Draft</button>
+        <span style="font-size:11px;color:var(--text3);">Let AI write a professional message for you</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary" onclick="sendEmail()">📤 Send</button>
+        <button class="btn btn-secondary" onclick="saveDraft()">💾 Draft</button>
+        <button class="btn btn-secondary btn-sm" onclick="toast('Attach your resume here','info')">📎 Attach Resume</button>
+      </div>
+      <button class="btn btn-ghost" onclick="closeCompose()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- POST MODAL -->
+<div class="overlay" id="post-overlay">
+  <div class="modal">
+    <div class="modal-header"><span>🚀 Post Resume to Job Boards</span><button class="btn btn-ghost" onclick="document.getElementById('post-overlay').classList.remove('open')">✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>Resume</label>
+        <select style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-family:var(--font);">
+          <option>David Haddix — Data Entry Analyst / Specialist</option>
+        </select>
+      </div>
+      <div class="field"><label>Post To</label>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;color:var(--text);">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" checked> LinkedIn</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" checked> Indeed</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" checked> FlexJobs</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" checked> Jobcase</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" checked> Lensa</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" checked> Virtual Vocations</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox"> EveryJobForMe</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox"> Remote.co</label>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox"> Get-Me-Jobs</label>
+          <div id="extra-board-checkboxes"></div>
+        </div>
+      </div>
+      <div class="field"><label>Cover Note (optional)</label><textarea placeholder="e.g. Available immediately for part-time remote data entry work. 15+ years experience, high accuracy, self-directed."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="postResume()">🚀 Post Now</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('post-overlay').classList.remove('open')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD APPLICATION -->
+<div class="overlay" id="app-overlay">
+  <div class="modal">
+    <div class="modal-header"><span>➕ Add Application</span><button class="btn btn-ghost" onclick="document.getElementById('app-overlay').classList.remove('open')">✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>Company</label><input type="text" id="acompany" placeholder="Company name"></div>
+      <div class="field"><label>Role / Title</label><input type="text" id="arole" placeholder="e.g. Data Entry Specialist"></div>
+      <div class="field"><label>Board / Source</label>
+        <select id="aboard" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-family:var(--font);">
+          <option>Indeed</option><option>LinkedIn</option><option>FlexJobs</option><option>Jobcase</option><option>Lensa</option><option>Virtual Vocations</option><option>EveryJobForMe</option><option>Remote.co</option><option>Get-Me-Jobs</option><option>Direct</option><option>Other</option>
+        </select>
+      </div>
+      <div class="field"><label>Status</label>
+        <select id="astatus" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-family:var(--font);">
+          <option value="applied">Applied</option><option value="interview">Interview</option><option value="offer">Offer</option><option value="rejected">Rejected</option><option value="saved">Saved</option>
+        </select>
+      </div>
+      <div class="field"><label>Pay / Rate</label><input type="text" id="apay" placeholder="e.g. $18/hr part-time" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--text);font-family:var(--font);outline:none;"></div>
+      <div class="field"><label>Notes</label><textarea id="anotes" placeholder="Any notes about this role…"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="saveApp()">Save</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('app-overlay').classList.remove('open')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toasts"></div>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>
+const CLIENT_ID = '200717302137-9s67oogsoqfb964rlhd066pv5fgbgtc0.apps.googleusercontent.com';
+const SCOPES = 'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/gmail.compose https://www.googleapis.com/auth/gmail.modify';
+
+const RESUME_CONTEXT = `David Haddix — dhaddix80@gmail.com — Middletown, Ohio 45042 — (513) 973-7293
+TARGET: Part-time remote Data Entry Analyst or Specialist position.
+
+SUMMARY: Detail-oriented professional with 15+ years of experience in data entry, records management, quality control, order processing, and office administration. High accuracy under volume, works independently. Proficient in Microsoft Word, Excel, QuickBooks, business invoicing systems.
+
+CORE COMPETENCIES: AI Agents & Digital Products, Quality Control & Verification, Invoicing & Payroll Records, Inventory Management, QuickBooks/POS, Document Drafting & Editing, Data Entry & Record Keeping.
+
+EXPERIENCE:
+- General Manager, Taylor Pavement Maintenance (Aug 2021–Mar 2022): data entry, records, invoicing, payroll, dispatch tracking.
+- Security Operations Center Operator, Allied Universal Security (2019–2021): real-time digital logs, incident tracking, camera/alarm system data entry, new employee training.
+- Senior Linux Engineer/Network Admin, Luxottica Retail (2015–2018): inventory records for 2,000+ devices, asset tracking, documentation, device configuration logs.
+- Account Executive, Decca Plus/Natural Beauty Products (Mar–Oct 2015): customer database, outreach tracking.
+- Project Manager, TC Tech LLC (Jun 2012–Oct 2013): QuickBooks POS, financial/inventory records, cash reconciliation.
+- Field Tech Supervisor, Scope Services/Duke Energy (May 2010–Sep 2011): Word/Excel data entry, tool/equipment inventory, promoted from technician.
+- Installation Technician, Precision Broadband/Time Warner (Jan 2009–Apr 2010): equipment records, customer account documentation, top performer award.
+- Quality Control Specialist, Parts Express International (Aug 2007–Jan 2009): shipping data entry, QC inspections, trained new staff, monthly bonuses for accuracy.
+- Order Processor, Dell Small Package Hub (Jan–Aug 2007): order processing, QC checks, selected for high-priority team.
+
+TECHNICAL SKILLS: MS Word, Excel, QuickBooks POS, Windows 7/8/10, Linux, Android, macOS, TeamViewer, LogMeIn, Claude Code/Cowork, Grok, Microsoft Copilot, AI-assisted automation.
+
+EDUCATION: High School Diploma, Middletown HS, 1998. CompTIA A+ Certification.
+
+EXTRACURRICULAR: AI agent design and deployment using Claude Code/Cowork; custom HTML job tracking tools; AI-assisted document creation and workflow automation.`;
+
+let token = null;
+let currentFolder = 'inbox';
+let applications = [];
+let extraBoards = new Set();
+
+const MORE_BOARDS = [
+  // Active in David's inbox — detected from dhaddix80@gmail.com
+  {id:'jobcase',        name:'Jobcase',          color:'#1A73E8', letter:'JC',  url:'https://www.jobcase.com/',             fromEmail:true},
+  {id:'lensa',          name:'Lensa',            color:'#7B2FBE', letter:'LE',  url:'https://lensa.com/',                   fromEmail:true},
+  {id:'virtualvocations',name:'Virtual Vocations',color:'#2E7D32',letter:'VV', url:'https://www.virtualvocations.com/',    fromEmail:true},
+  {id:'everyjobforme',  name:'EveryJobForMe',    color:'#E65100', letter:'EJF', url:'https://www.everyjobforme.com/',       fromEmail:true},
+  {id:'remoteco',       name:'Remote.co',        color:'#00838F', letter:'RC',  url:'https://remote.co/remote-jobs/',       fromEmail:true},
+  {id:'getmejobs',      name:'Get-Me-Jobs',      color:'#37474F', letter:'GMJ', url:'https://www.get-me-jobs.com/',         fromEmail:true},
+  // Additional boards available to connect
+  {id:'glassdoor',      name:'Glassdoor',        color:'#0CAA41', letter:'GD',  url:'https://www.glassdoor.com/'},
+  {id:'ziprecruiter',   name:'ZipRecruiter',     color:'#FF4300', letter:'ZIP', url:'https://www.ziprecruiter.com/'},
+  {id:'dice',           name:'Dice',             color:'#EB3C00', letter:'dice',url:'https://www.dice.com/'},
+  {id:'monster',        name:'Monster',          color:'#7B3F9E', letter:'M',   url:'https://www.monster.com/'},
+  {id:'careerbuilder',  name:'CareerBuilder',    color:'#1565C0', letter:'CB',  url:'https://www.careerbuilder.com/'},
+  {id:'wellfound',      name:'Wellfound',        color:'#111',    letter:'WF',  url:'https://wellfound.com/'},
+  {id:'snagajob',       name:'Snagajob',         color:'#E65100', letter:'SJ',  url:'https://www.snagajob.com/'},
+  {id:'simplyhired',    name:'SimplyHired',      color:'#1976D2', letter:'SH',  url:'https://www.simplyhired.com/'},
+  {id:'usajobs',        name:'USAJobs',          color:'#003366', letter:'USA', url:'https://www.usajobs.gov/'},
+  {id:'remoteok',       name:'Remote OK',        color:'#17A84B', letter:'RO',  url:'https://remoteok.com/'},
+];
+
+function switchPanel(n){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+n).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  const i={dashboard:0,resumes:1,boards:2,applications:3,email:4}[n];
+  if(i!==undefined) document.querySelectorAll('.nav-btn')[i].classList.add('active');
+}
+
+// ── GOOGLE SIGN-IN ─────────────────────────────────────────────
+function initSignIn(){
+  document.getElementById('gsignin-btn').innerHTML=`<button class="btn btn-primary" onclick="gmailSignIn()" style="font-size:14px;padding:10px 24px;">
+    <svg width="18" height="18" viewBox="0 0 48 48" style="margin-right:6px;vertical-align:middle;"><path fill="#FFC107" d="M43.6 20H24v8h11.3C33.6 33.1 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34.2 6.5 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 20-8.9 20-20 0-1.3-.1-2.7-.4-4z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.1 18.9 12 24 12c3 0 5.8 1.1 7.9 3l5.7-5.7C34.2 6.5 29.4 4 24 4 16.3 4 9.7 8.4 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 10-1.9 13.7-5l-6.3-5.3C29.5 35.5 26.9 36 24 36c-5.2 0-9.5-2.9-11.3-7.1l-6.6 5.1C9.7 39.6 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20H24v8h11.3c-.9 2.4-2.5 4.4-4.6 5.7l6.3 5.3C40.5 35.4 44 30.1 44 24c0-1.3-.1-2.7-.4-4z"/></svg>
+    Sign in with Google
+  </button>`;
+}
+
+function gmailSignIn(){
+  if(!window.google?.accounts?.oauth2){toast('Google Sign-In loading — try again in a moment.','error');return;}
+  google.accounts.oauth2.initTokenClient({
+    client_id:CLIENT_ID,
+    scope:SCOPES,
+    hint:'dhaddix80@gmail.com',
+    callback:r=>{
+      if(r.error){toast('Sign-in failed: '+r.error,'error');return;}
+      token=r.access_token;onConnected();
+    }
+  }).requestAccessToken({prompt:'select_account',login_hint:'dhaddix80@gmail.com'});
+}
+
+function onConnected(){
+  document.getElementById('gmail-dot').classList.add('on');
+  document.getElementById('gmail-status-text').textContent='Gmail connected';
+  document.getElementById('gmail-signin-view').style.display='none';
+  document.getElementById('gmail-inbox-view').style.display='block';
+  document.getElementById('email-sub').textContent='dhaddix80@gmail.com — Live';
+  document.getElementById('email-actions').innerHTML=`
+    <button class="btn btn-secondary" onclick="loadEmails(currentFolder)">🔄 Refresh</button>
+    <button class="btn btn-primary" onclick="openCompose()">✏️ Compose</button>`;
+  toast('Gmail connected — loading inbox…','success');
+  loadEmails('inbox');
+  loadUnread();
+}
+
+async function gfetch(path,opts={}){
+  const r=await fetch('https://gmail.googleapis.com'+path,{...opts,headers:{Authorization:'Bearer '+token,'Content-Type':'application/json',...(opts.headers||{})}});
+  if(!r.ok)throw new Error('Gmail API '+r.status);
+  return r.json();
+}
+
+async function loadUnread(){
+  try{
+    const d=await gfetch('/gmail/v1/users/me/messages?labelIds=UNREAD&labelIds=INBOX&maxResults=1');
+    const n=d.resultSizeEstimate||0;
+    document.getElementById('sb-unread').textContent=n;
+    document.getElementById('dash-unread').textContent=n;
+    document.getElementById('dash-unread-sub').textContent=n+' unread messages';
+  }catch(e){}
+}
+
+async function loadEmails(folder){
+  currentFolder=folder;
+  const el=document.getElementById('email-list-body');
+  el.innerHTML='<div class="loading-row"><div class="spinner"></div> Loading…</div>';
+  const lmap={inbox:'INBOX',sent:'SENT',drafts:'DRAFT',jobs:'INBOX'};
+  const jq='subject:(job OR resume OR application OR hiring OR recruiter OR interview OR position OR opportunity OR indeed OR linkedin OR flexjobs OR data entry)';
+  let url=`/gmail/v1/users/me/messages?maxResults=25&labelIds=${lmap[folder]||'INBOX'}`;
+  if(folder==='jobs')url+='&q='+encodeURIComponent(jq);
+  try{
+    const data=await gfetch(url);
+    const msgs=data.messages||[];
+    if(!msgs.length){el.innerHTML='<div style="padding:24px;text-align:center;color:var(--text3);font-size:13px;">No messages found.</div>';return;}
+    const details=await Promise.all(msgs.slice(0,25).map(m=>gfetch(`/gmail/v1/users/me/messages/${m.id}?format=metadata&metadataHeaders=From&metadataHeaders=Subject&metadataHeaders=Date`)));
+    el.innerHTML='';
+    details.forEach(msg=>{
+      const h={};(msg.payload?.headers||[]).forEach(x=>h[x.name]=x.value);
+      const from=(h['From']||'Unknown').replace(/<.*>/,'').replace(/"/g,'').trim();
+      const subj=h['Subject']||'(no subject)';
+      const date=h['Date']?new Date(h['Date']).toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
+      const unread=(msg.labelIds||[]).includes('UNREAD');
+      const div=document.createElement('div');
+      div.className='email-item'+(unread?' unread':'');
+      div.innerHTML=`<div class="erow"><span class="esender">${esc(from.substring(0,26))}</span><span class="etime">${date}</span></div>
+        <div class="esubject">${esc(subj.substring(0,52))}</div>
+        <div class="epreview">${esc((msg.snippet||'').substring(0,70))}</div>`;
+      div.onclick=()=>openEmail(msg.id,div,h['From']||'',subj);
+      el.appendChild(div);
+    });
+  }catch(e){el.innerHTML=`<div style="padding:24px;color:var(--danger);font-size:13px;">Error: ${e.message}</div>`;}
+}
+
+async function openEmail(id,el,from,subj){
+  document.querySelectorAll('.email-item').forEach(e=>e.classList.remove('selected'));
+  el.classList.add('selected');el.classList.remove('unread');
+  const panel=document.getElementById('email-view-panel');
+  panel.innerHTML='<div class="loading-row"><div class="spinner"></div> Loading…</div>';
+  try{
+    const msg=await gfetch(`/gmail/v1/users/me/messages/${id}?format=full`);
+    const h={};(msg.payload?.headers||[]).forEach(x=>h[x.name]=x.value);
+    panel.innerHTML=`
+      <div class="ev-header">
+        <div class="ev-subject">${esc(h['Subject']||'(no subject)')}</div>
+        <div class="ev-meta">From: ${esc(h['From']||'')} &nbsp;·&nbsp; ${h['Date']?new Date(h['Date']).toLocaleString():''}</div>
+      </div>
+      <div class="ev-body">${extractBody(msg.payload)}</div>
+      <div class="ev-actions">
+        <button class="btn btn-primary btn-sm" onclick="openReply('${ea(h['From']||'')}','${ea(h['Subject']||'')}')">↩️ Reply</button>
+        <button class="btn btn-secondary btn-sm" onclick="openCompose()">↪️ Forward</button>
+        <button class="btn btn-secondary btn-sm" onclick="toast('Email saved','success')">⬇️ Save</button>
+        <button class="btn btn-secondary btn-sm" onclick="toast('Tagged as job lead ✓','success')">🎯 Tag Lead</button>
+        <button class="btn btn-danger btn-sm" onclick="trashEmail('${id}')">🗑️ Delete</button>
+      </div>`;
+    gfetch(`/gmail/v1/users/me/messages/${id}/modify`,{method:'POST',body:JSON.stringify({removeLabelIds:['UNREAD']})}).catch(()=>{});
+  }catch(e){panel.innerHTML=`<div style="padding:24px;color:var(--danger);">Error: ${e.message}</div>`;}
+}
+
+function extractBody(payload){
+  if(!payload)return'';
+  if(payload.mimeType==='text/html'&&payload.body?.data)return b64d(payload.body.data);
+  if(payload.mimeType==='text/plain'&&payload.body?.data)return`<pre style="white-space:pre-wrap;font-family:inherit;font-size:13px;color:var(--text2);">${esc(b64d(payload.body.data))}</pre>`;
+  if(payload.parts){
+    const html=payload.parts.find(p=>p.mimeType==='text/html');
+    if(html?.body?.data)return b64d(html.body.data);
+    const txt=payload.parts.find(p=>p.mimeType==='text/plain');
+    if(txt?.body?.data)return`<pre style="white-space:pre-wrap;font-family:inherit;font-size:13px;color:var(--text2);">${esc(b64d(txt.body.data))}</pre>`;
+    for(const p of payload.parts){const r=extractBody(p);if(r)return r;}
+  }
+  return'<p style="color:var(--text3)">(No readable content)</p>';
+}
+function b64d(s){try{return atob(s.replace(/-/g,'+').replace(/_/g,'/'))}catch{return'';}}
+
+async function trashEmail(id){
+  try{await gfetch(`/gmail/v1/users/me/messages/${id}/trash`,{method:'POST'});document.getElementById('email-view-panel').innerHTML='<div style="padding:40px;text-align:center;color:var(--text3);">🗑️ Deleted.</div>';toast('Moved to trash','success');loadEmails(currentFolder);}
+  catch(e){toast('Delete failed: '+e.message,'error');}
+}
+
+function setFolder(f,tab){
+  if(!token)return;
+  currentFolder=f;
+  if(tab){document.querySelectorAll('#panel-email .tab').forEach(t=>t.classList.remove('active'));tab.classList.add('active');}
+  document.getElementById('folder-label').textContent={inbox:'Inbox',jobs:'Job Emails',sent:'Sent',drafts:'Drafts'}[f]||f;
+  loadEmails(f);
+}
+
+function mkRaw(to,subj,body){
+  const email=[`To: ${to}`,`Subject: ${subj}`,'Content-Type: text/plain; charset=utf-8','',body].join('\n');
+  return btoa(unescape(encodeURIComponent(email))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+
+async function sendEmail(){
+  if(!token){toast('Connect Gmail first','error');return;}
+  const to=document.getElementById('cto').value.trim();
+  const subj=document.getElementById('csubject').value.trim();
+  const body=document.getElementById('cbody').value.trim();
+  if(!to){toast('Please add a recipient','error');return;}
+  if(!subj){toast('Please add a subject','error');return;}
+  try{await gfetch('/gmail/v1/users/me/messages/send',{method:'POST',body:JSON.stringify({raw:mkRaw(to,subj,body)})});closeCompose();toast('Email sent from dhaddix80@gmail.com ✓','success');}
+  catch(e){toast('Send failed: '+e.message,'error');}
+}
+
+async function saveDraft(){
+  if(!token){toast('Connect Gmail first','error');return;}
+  const to=document.getElementById('cto').value.trim(),subj=document.getElementById('csubject').value.trim(),body=document.getElementById('cbody').value.trim();
+  try{await gfetch('/gmail/v1/users/me/drafts',{method:'POST',body:JSON.stringify({message:{raw:mkRaw(to,subj,body)}})});closeCompose();toast('Draft saved to Gmail ✓','success');}
+  catch(e){toast('Draft failed: '+e.message,'error');}
+}
+
+function openCompose(opts={}){
+  document.getElementById('compose-title').textContent=opts.title||'New Email';
+  document.getElementById('cto').value=opts.to||'';
+  document.getElementById('csubject').value=opts.subj||'';
+  document.getElementById('cbody').value=opts.body||'';
+  document.getElementById('compose-overlay').classList.add('open');
+}
+function closeCompose(){document.getElementById('compose-overlay').classList.remove('open');}
+function openReply(from,subj){openCompose({title:'Reply',to:from.replace(/.*<(.+)>.*/,'$1')||from,subj:'Re: '+subj});}
+
+async function aiDraftEmail(){
+  const subj=document.getElementById('csubject').value||'job application inquiry';
+  toast('AI drafting your email…','info');
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:800,system:`You are writing a professional email on behalf of David Haddix (dhaddix80@gmail.com), who is seeking a part-time remote data entry position. His background: 15+ years data entry, records management, QuickBooks, payroll, quality control, order processing. He is in Middletown, Ohio. Write concise, professional emails. Return ONLY the email body — no subject line, no preamble.`,messages:[{role:'user',content:'Write a professional email for: '+subj}]})});
+    const d=await r.json();
+    document.getElementById('cbody').value=d.content?.find(b=>b.type==='text')?.text||'';
+    toast('AI draft ready!','success');
+  }catch(e){toast('AI draft failed','error');}
+}
+
+// ── AI RESUME ──────────────────────────────────────────────────
+let aiThinking=false;
+function handleAIKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAIMessage();}}
+function sendQuickPrompt(t){document.getElementById('ai-input').value=t;sendAIMessage();}
+
+async function sendAIMessage(){
+  if(aiThinking)return;
+  const input=document.getElementById('ai-input');
+  const text=input.value.trim();if(!text)return;
+  input.value='';
+  const c=document.getElementById('ai-messages');
+  const um=document.createElement('div');um.className='ai-msg user';um.textContent=text;c.appendChild(um);
+  const ld=document.createElement('div');ld.className='ai-loading';ld.innerHTML='<span></span><span></span><span></span>';c.appendChild(ld);
+  c.scrollTop=c.scrollHeight;
+  aiThinking=true;document.getElementById('main-editor').classList.add('ai-thinking');
+  try{
+    const resumeText=document.getElementById('resume-editor').innerText;
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,
+      system:`You are an expert resume writer and career coach for David Haddix. Full background:\n\n${RESUME_CONTEXT}\n\nCurrent resume text:\n${resumeText}\n\nDavid is targeting part-time remote data entry roles. Be specific, actionable, and tailor all advice to his actual experience.`,
+      messages:[{role:'user',content:text}]})});
+    const d=await r.json();
+    const reply=d.content?.find(b=>b.type==='text')?.text||'Unable to process.';
+    ld.remove();
+    const bm=document.createElement('div');bm.className='ai-msg bot';
+    bm.innerHTML=reply.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+    c.appendChild(bm);
+  }catch(e){ld.remove();const em=document.createElement('div');em.className='ai-msg bot';em.textContent='Connection error. Try again.';c.appendChild(em);}
+  c.scrollTop=c.scrollHeight;
+  aiThinking=false;document.getElementById('main-editor').classList.remove('ai-thinking');
+}
+
+async function aiRefineAll(){
+  toast('AI reviewing your resume…','info');
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,
+      system:`You are an expert resume coach. David Haddix is targeting part-time remote data entry roles. Background:\n\n${RESUME_CONTEXT}`,
+      messages:[{role:'user',content:'Give the top 3 most impactful improvements I can make to this resume to land a part-time remote data entry job. Be specific.\n\n'+document.getElementById('resume-editor').innerText}]})});
+    const d=await r.json();const text=d.content?.find(b=>b.type==='text')?.text||'';
+    const c=document.getElementById('ai-messages');
+    const m=document.createElement('div');m.className='ai-msg bot';
+    m.innerHTML='✨ <strong>Full Resume Review:</strong><br><br>'+text.replace(/\n/g,'<br>');
+    c.appendChild(m);c.scrollTop=c.scrollHeight;
+    toast('Review complete — see assistant panel','success');
+  }catch(e){toast('AI review failed','error');}
+}
+
+// ── RESUME EDITOR ──────────────────────────────────────────────
+function openEditor(){
+  document.getElementById('resume-list-view').style.display='none';
+  document.getElementById('resume-editor-view').style.display='block';
+  switchPanel('resumes');
+}
+function closeEditor(){
+  document.getElementById('resume-list-view').style.display='';
+  document.getElementById('resume-editor-view').style.display='none';
+}
+function showUpload(){const e=document.getElementById('upload-wrap');e.style.display=e.style.display==='none'?'':'none';}
+
+// ── JOB BOARDS ─────────────────────────────────────────────────
+function renderMoreBoards(){
+  const addable = MORE_BOARDS.filter(b => !b.fromEmail);
+  document.getElementById('more-boards-grid').innerHTML=addable.map(b=>`
+    <div class="board-card ${extraBoards.has(b.id)?'active-board':''}">
+      <div class="board-logo" style="background:${b.color};font-size:11px;">${b.letter}</div>
+      <div class="board-name">${b.name}</div>
+      <div class="board-status ${extraBoards.has(b.id)?'ok':''}">${extraBoards.has(b.id)?'✓ Connected':'Click to connect'}</div>
+      <div class="board-actions">
+        ${extraBoards.has(b.id)
+          ?`<button class="btn btn-sm btn-secondary" onclick="window.open('${b.url}','_blank')">Open</button>
+             <button class="btn btn-sm btn-danger" onclick="extraBoards.delete('${b.id}');renderMoreBoards();toast('${b.name} removed','info')">Remove</button>`
+          :`<button class="btn btn-sm btn-primary" onclick="extraBoards.add('${b.id}');renderMoreBoards();window.open('${b.url}','_blank');toast('${b.name} connected — upload resume there','success')">Connect</button>`}
+      </div>
+    </div>`).join('');
+  document.getElementById('extra-board-checkboxes').innerHTML=[...extraBoards].map(id=>{
+    const b=MORE_BOARDS.find(x=>x.id===id);
+    return b?`<label style="display:flex;align-items:center;gap:8px;cursor:pointer;"><input type="checkbox" checked> ${b.name}</label>`:'';
+  }).join('');
+}
+
+function setBoardTab(el,tab){
+  document.querySelectorAll('#panel-boards .tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  ['active','more','settings'].forEach(t=>{const d=document.getElementById('bt-'+t);if(d)d.style.display=t===tab?'':'none';});
+}
+
+function openPostModal(){renderMoreBoards();document.getElementById('post-overlay').classList.add('open');}
+function postResume(){
+  const checked=[...document.querySelectorAll('#post-overlay input[type=checkbox]:checked')].length;
+  if(!checked){toast('Select at least one board','error');return;}
+  document.getElementById('post-overlay').classList.remove('open');
+  toast(`Posting resume to ${checked} board${checked>1?'s':''}…`,'info');
+  setTimeout(()=>toast(`Resume posted to ${checked} board${checked>1?'s':''} ✓`,'success'),1500);
+}
+
+// ── APPLICATIONS ───────────────────────────────────────────────
+function saveApp(){
+  const company=document.getElementById('acompany').value.trim();
+  const role=document.getElementById('arole').value.trim();
+  if(!company||!role){toast('Fill in company and role','error');return;}
+  applications.push({company,role,board:document.getElementById('aboard').value,status:document.getElementById('astatus').value,pay:document.getElementById('apay').value,notes:document.getElementById('anotes').value,date:new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'})});
+  document.getElementById('app-overlay').classList.remove('open');
+  ['acompany','arole','apay','anotes'].forEach(id=>document.getElementById(id).value='');
+  renderApps();toast('Application tracked!','success');
+}
+
+function renderApps(){
+  document.getElementById('sb-apps').textContent=applications.length;
+  document.getElementById('dash-apps').textContent=applications.length;
+  const wrap=document.getElementById('apps-wrap');
+  if(!applications.length){
+    wrap.innerHTML='<div style="text-align:center;padding:40px;color:var(--text3);"><div style="font-size:32px;margin-bottom:10px;">📋</div><div style="font-size:13px;">No applications tracked yet. Add them as you apply.</div><div style="margin-top:12px;"><button class="btn btn-primary btn-sm" onclick="document.getElementById(\'app-overlay\').classList.add(\'open\')">➕ Add First Application</button></div></div>';
+    return;
+  }
+  const sc={applied:'s-applied',interview:'s-interview',offer:'s-offer',rejected:'s-rejected',saved:'s-saved'};
+  wrap.innerHTML=`<div class="table-wrap"><table><thead><tr><th>Company</th><th>Role</th><th>Board</th><th>Pay</th><th>Date</th><th>Status</th><th>Notes</th></tr></thead><tbody>
+    ${applications.map(a=>`<tr>
+      <td><strong>${esc(a.company)}</strong></td>
+      <td>${esc(a.role)}</td>
+      <td>${esc(a.board)}</td>
+      <td style="color:var(--accent2)">${esc(a.pay||'—')}</td>
+      <td>${a.date}</td>
+      <td><span class="sp ${sc[a.status]||'s-applied'}">${a.status}</span></td>
+      <td style="color:var(--text3);font-size:12px;">${esc((a.notes||'').substring(0,35))}${(a.notes||'').length>35?'…':''}</td>
+    </tr>`).join('')}
+  </tbody></table></div>`;
+}
+
+// ── HELPERS ────────────────────────────────────────────────────
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function ea(s){return String(s).replace(/'/g,"\\'").replace(/"/g,'&quot;');}
+
+function toast(msg,type='info'){
+  const el=document.createElement('div');el.className='toast '+type;
+  el.innerHTML=`<span>${{success:'✅',info:'ℹ️',error:'❌'}[type]}</span><span>${msg}</span>`;
+  document.getElementById('toasts').appendChild(el);
+  setTimeout(()=>el.remove(),4000);
+}
+
+['compose-overlay','post-overlay','app-overlay'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+});
+
+window.addEventListener('load',()=>{
+  renderMoreBoards();renderApps();
+  const wait=setInterval(()=>{if(window.google?.accounts?.oauth2){clearInterval(wait);initSignIn();}},300);
+});
+</script>
+</body>
+</html>
