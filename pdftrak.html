@@ -49,6 +49,8 @@ button{font-family:var(--font);}
 .tb-btn:disabled:hover{border-color:var(--border);color:var(--text);}
 .tb-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;}
 .tb-btn.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover);color:#fff;}
+.tb-btn.danger{color:var(--danger);border-color:var(--border);}
+.tb-btn.danger:hover{background:var(--danger);border-color:var(--danger);color:#fff;}
 .tb-sep{width:1px;height:22px;background:var(--border);flex-shrink:0;margin:0 2px;}
 .tb-spacer{flex:1;min-width:8px;}
 .zoom-controls{display:flex;align-items:center;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:2px;flex-shrink:0;}
@@ -191,6 +193,7 @@ button{font-family:var(--font);}
     <button class="tb-btn" id="btn-open-project">Open Project</button>
     <button class="tb-btn" id="btn-save-project" disabled>Save Project</button>
     <button class="tb-btn primary" id="btn-download" disabled>⬇ Download PDF</button>
+    <button class="tb-btn danger" id="btn-delete-doc" disabled title="Delete this PDF">🗑 Delete PDF</button>
     <button class="tb-btn mobile-only" id="btn-thumb-toggle">📑</button>
   </header>
 
@@ -589,6 +592,7 @@ function updateDocButtons(){
   document.getElementById('btn-merge').disabled = !has;
   document.getElementById('btn-save-project').disabled = !has;
   document.getElementById('btn-download').disabled = !has;
+  document.getElementById('btn-delete-doc').disabled = !has;
 }
 
 // ---------------------------- thumbnails ----------------------------
@@ -1239,6 +1243,15 @@ async function openPdfFile(file){
     toast('Could not open that PDF: ' + err.message, 'error');
   }
 }
+function deleteCurrentDocument(){
+  if (!state.pages.length) return;
+  if (!window.confirm('Delete this PDF from PDFTrak? This removes it from the app entirely — if you haven\'t downloaded it, your edits will be lost.')) return;
+  resetDocument();
+  state.docName = 'PDFTrak-Document';
+  document.getElementById('doc-title').textContent = '';
+  renderAll();
+  toast('PDF deleted from PDFTrak.', 'success');
+}
 async function newBlankDocument(){
   if (!confirmReplaceIfNeeded()) return;
   showLoading('Creating blank PDF…');
@@ -1386,6 +1399,7 @@ function initUI(){
   document.getElementById('zoom-out').addEventListener('click', function(){ setZoom(state.scale - 0.15); });
 
   document.getElementById('btn-download').addEventListener('click', downloadPdf);
+  document.getElementById('btn-delete-doc').addEventListener('click', deleteCurrentDocument);
   document.getElementById('btn-save-project').addEventListener('click', saveProject);
   document.getElementById('btn-open-project').addEventListener('click', function(){ document.getElementById('project-input').click(); });
   document.getElementById('dz-open-project').addEventListener('click', function(){ document.getElementById('project-input').click(); });
